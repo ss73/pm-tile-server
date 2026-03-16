@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Map Viewer</title>
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.css" />
+    <style>
+        body { margin: 0; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+        #style-selector {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1;
+            background: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+            font-family: sans-serif;
+            font-size: 14px;
+        }
+        #style-selector select {
+            margin-left: 6px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <div id="style-selector">
+        <label>Style
+            <select id="theme">
+                <option value="light" selected>Light</option>
+                <option value="dark">Dark</option>
+                <option value="white">White</option>
+                <option value="grayscale">Grayscale</option>
+                <option value="black">Black</option>
+            </select>
+        </label>
+    </div>
+
+    <script src="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.js"></script>
+    <script src="https://unpkg.com/pmtiles@4/dist/pmtiles.js"></script>
+    <script src="https://unpkg.com/@protomaps/basemaps@5/dist/basemaps.js"></script>
+    <script>
+        const protocol = new pmtiles.Protocol();
+        maplibregl.addProtocol("pmtiles", protocol.tile);
+
+        const TILE_URL = "pmtiles://" + window.location.origin + "/tiles/planet";
+        const GLYPHS = "https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf";
+        const ATTRIBUTION = '<a href="https://protomaps.com">Protomaps</a> &copy; <a href="https://openstreetmap.org">OpenStreetMap</a>';
+
+        function buildStyle(theme) {
+            const flavor = basemaps.namedFlavor(theme);
+            return {
+                version: 8,
+                glyphs: GLYPHS,
+                sprite: "https://protomaps.github.io/basemaps-assets/sprites/v4/" + theme,
+                sources: {
+                    protomaps: {
+                        type: "vector",
+                        url: TILE_URL,
+                        attribution: ATTRIBUTION
+                    }
+                },
+                layers: basemaps.layers("protomaps", flavor, { lang: "en" })
+            };
+        }
+
+        const map = new maplibregl.Map({
+            container: "map",
+            style: buildStyle("light"),
+            center: [0, 20],
+            zoom: 2
+        });
+
+        map.addControl(new maplibregl.NavigationControl());
+
+        document.getElementById("theme").addEventListener("change", function () {
+            map.setStyle(buildStyle(this.value));
+        });
+    </script>
+</body>
+</html>

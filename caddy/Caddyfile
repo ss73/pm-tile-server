@@ -1,0 +1,17 @@
+{
+	order pmtiles_proxy before reverse_proxy
+}
+
+:80 {
+	handle_path /tiles/* {
+		pmtiles_proxy {
+			bucket /data
+			cache_size 256
+		}
+	}
+
+	handle {
+		root * /srv/web
+		file_server
+	}
+}
