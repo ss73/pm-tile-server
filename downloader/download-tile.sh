@@ -21,16 +21,24 @@ if ! flock -n 9; then
 fi
 
 # Determine the latest available build
-log "Fetching latest build listing..."
-LATEST=$(curl -sf "$BASE_URL/" \
-    | grep -oE '[0-9]{8}\.pmtiles' \
-    | sort -r \
-    | head -1)
+BUILDS_API="https://build-metadata.protomaps.dev/builds.json"
+log "Fetching latest build info..."
+BUILD_META=$(curl -sf "$BUILDS_API")
+
+LATEST=$(echo "$BUILD_META" \
+    | grep -oE '"key":"[0-9]{8}\.pmtiles"' \
+    | tail -1 \
+    | grep -oE '[0-9]{8}\.pmtiles')
 
 if [ -z "$LATEST" ]; then
     log "ERROR: Could not determine latest build."
     exit 1
 fi
+
+TOTAL_BYTES=$(echo "$BUILD_META" \
+    | grep -oE "\"key\":\"$LATEST\",\"size\":[0-9]+" \
+    | grep -oE '[0-9]+$')
+TOTAL_BYTES=${TOTAL_BYTES:-0}
 
 LATEST_DATE="${LATEST%.pmtiles}"
 log "Latest available build: $LATEST_DATE"
@@ -63,10 +71,26 @@ while true; do
         log "Starting download: $DOWNLOAD_URL"
     fi
 
-    if curl -C - -o "$PART_FILE" -f "$DOWNLOAD_URL" 2>&1; then
-        log "Download complete."
-        break
-    fi
+    # Run curl in background, monitor progress from file size
+    curl -C - -o "$PART_FILE" -f -s "$DOWNLOAD_URL" &
+    CURL_PID=$!
+
+    while kill -0 $CURL_PID 2>/dev/null; do
+        sleep 30
+        if [ -f "$PART_FILE" ]; then
+            CUR_SIZE=$(stat -c%s "$PART_FILE" 2>/dev/null || stat -f%z "$PART_FILE" 2>/dev/null || echo 0)
+            CUR_GB=$(echo "$CUR_SIZE" | awk '{printf "%.1f", $1/1073741824}')
+            if [ "$TOTAL_BYTES" -gt 0 ] 2>/dev/null; then
+                TOTAL_GB=$(echo "$TOTAL_BYTES" | awk '{printf "%.1f", $1/1073741824}')
+                PCT=$(echo "$CUR_SIZE $TOTAL_BYTES" | awk '{printf "%.1f", $1/$2*100}')
+                log "Progress: ${CUR_GB} GB / ${TOTAL_GB} GB (${PCT}%)"
+            else
+                log "Progress: ${CUR_GB} GB"
+            fi
+        fi
+    done
+
+    wait $CURL_PID && { log "Download complete."; break; }
 
     RETRIES=$((RETRIES + 1))
     if [ $RETRIES -ge $MAX_RETRIES ]; then

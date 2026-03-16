@@ -39,7 +39,7 @@ A self-hosted map tile service using Protomaps planet tiles, served by Caddy wit
 
 **Behavior:**
 - Acquires a lock file (`/data/download.lock`) using `flock`. If another instance is already running, exits immediately. The lock is released automatically when the process exits (including crashes/kills).
-- Fetches the build listing from `https://build.protomaps.com/` to determine the latest available `YYYYMMDD.pmtiles` file.
+- Fetches the build metadata from `https://build-metadata.protomaps.dev/builds.json` to determine the latest available `YYYYMMDD.pmtiles` file.
 - Compares against the current symlink target in `./data/` (if any) to determine if a newer build exists.
 - If a newer build is available, downloads it in a retry loop:
   - Uses `curl` with resume support (`-C -`). If a `.part` file exists from a previous interrupted run (or retry), the download resumes from where it left off.
