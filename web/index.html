@@ -11,7 +11,7 @@
         #style-selector {
             position: absolute;
             top: 10px;
-            right: 10px;
+            right: 50px;
             z-index: 1;
             background: white;
             padding: 8px 12px;
@@ -41,15 +41,11 @@
     </div>
 
     <script src="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.js"></script>
-    <script src="https://unpkg.com/pmtiles@4/dist/pmtiles.js"></script>
     <script src="https://unpkg.com/@protomaps/basemaps@5/dist/basemaps.js"></script>
     <script>
-        const protocol = new pmtiles.Protocol();
-        maplibregl.addProtocol("pmtiles", protocol.tile);
-
-        const TILE_URL = "pmtiles://" + window.location.origin + "/tiles/planet";
+        const TILES_URL = window.location.origin + "/tiles/planet/{z}/{x}/{y}.mvt";
         const GLYPHS = "https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf";
-        const ATTRIBUTION = '<a href="https://protomaps.com">Protomaps</a> &copy; <a href="https://openstreetmap.org">OpenStreetMap</a>';
+        const ATTRIBUTION = '&copy; OpenStreetMap contributors';
 
         function buildStyle(theme) {
             const flavor = basemaps.namedFlavor(theme);
@@ -60,11 +56,13 @@
                 sources: {
                     protomaps: {
                         type: "vector",
-                        url: TILE_URL,
+                        tiles: [TILES_URL],
+                        maxzoom: 15,
                         attribution: ATTRIBUTION
                     }
                 },
                 layers: basemaps.layers("protomaps", flavor, { lang: "en" })
+                    .filter(function (l) { return l.id !== "pois"; })
             };
         }
 
@@ -72,10 +70,12 @@
             container: "map",
             style: buildStyle("light"),
             center: [0, 20],
-            zoom: 2
+            zoom: 2,
+            attributionControl: false
         });
 
         map.addControl(new maplibregl.NavigationControl());
+        map.addControl(new maplibregl.AttributionControl({ compact: false, customAttribution: ATTRIBUTION }));
 
         document.getElementById("theme").addEventListener("change", function () {
             map.setStyle(buildStyle(this.value));

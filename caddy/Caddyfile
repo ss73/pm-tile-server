@@ -5,7 +5,7 @@
 :80 {
 	handle_path /tiles/* {
 		pmtiles_proxy {
-			bucket /data
+			bucket file:///data
 			cache_size 256
 		}
 	}
