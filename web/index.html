@@ -38,6 +38,9 @@
                 <option value="black">Black</option>
             </select>
         </label>
+        <label style="margin-left: 12px;">
+            <input type="checkbox" id="pois"> POIs
+        </label>
     </div>
 
     <script src="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.js"></script>
@@ -47,8 +50,12 @@
         const GLYPHS = "https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf";
         const ATTRIBUTION = '&copy; OpenStreetMap contributors';
 
-        function buildStyle(theme) {
+        function buildStyle(theme, showPois) {
             const flavor = basemaps.namedFlavor(theme);
+            var layers = basemaps.layers("protomaps", flavor, { lang: "en" });
+            if (!showPois) {
+                layers = layers.filter(function (l) { return l.id !== "pois"; });
+            }
             return {
                 version: 8,
                 glyphs: GLYPHS,
@@ -61,8 +68,7 @@
                         attribution: ATTRIBUTION
                     }
                 },
-                layers: basemaps.layers("protomaps", flavor, { lang: "en" })
-                    .filter(function (l) { return l.id !== "pois"; })
+                layers: layers
             };
         }
 
@@ -77,8 +83,19 @@
         map.addControl(new maplibregl.NavigationControl());
         map.addControl(new maplibregl.AttributionControl({ compact: false, customAttribution: ATTRIBUTION }));
 
+        function currentStyle() {
+            return buildStyle(
+                document.getElementById("theme").value,
+                document.getElementById("pois").checked
+            );
+        }
+
         document.getElementById("theme").addEventListener("change", function () {
-            map.setStyle(buildStyle(this.value));
+            map.setStyle(currentStyle());
+        });
+
+        document.getElementById("pois").addEventListener("change", function () {
+            map.setStyle(currentStyle());
         });
     </script>
 </body>
