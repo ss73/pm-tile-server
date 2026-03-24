@@ -6,4 +6,5 @@ services:
     volumes:
       - ./data:/data:ro
       - ./web:/srv/web:ro
+      - ./fonts/output:/srv/fonts:ro
     restart: unless-stopped
