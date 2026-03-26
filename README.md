@@ -26,7 +26,43 @@ Opens on [http://localhost:8080](http://localhost:8080).
 
 ### 3. View the map
 
-Open [http://localhost:8080](http://localhost:8080) in a browser. Use the style selector to switch between light, dark, white, grayscale, and black themes.
+Open [http://localhost:8080](http://localhost:8080) in a browser. Use the style selector to switch between light, dark, white, grayscale, black, and the custom Blueberry themes.
+
+### Custom themes
+
+The example app includes two custom map themes:
+
+- **Blueberry** — a dark navy theme with a subdued label hierarchy
+- **Blueberry Milk** — a matching light theme with dark labels on a pale blue background
+
+Both use the [Inter](https://rsms.me/inter/) font, served locally as PBF glyphs.
+
+### Custom font glyphs
+
+Map labels require fonts in PBF (SDF glyph) format. A generation script is included at `fonts/generate-glyphs.sh`.
+
+**Prerequisites:**
+
+```sh
+cargo install build_pbf_glyphs
+```
+
+**To add a new font:**
+
+1. Place `.ttf` or `.otf` files in `fonts/input/`
+2. Run the script:
+
+```sh
+./fonts/generate-glyphs.sh
+```
+
+This generates PBF glyph ranges in `fonts/output/<FontName>/` which Caddy serves at `/fonts/{fontstack}/{range}.pbf`.
+
+To process a single font file:
+
+```sh
+./fonts/generate-glyphs.sh MyFont-Regular.ttf
+```
 
 ## Architecture
 
@@ -56,6 +92,10 @@ Open [http://localhost:8080](http://localhost:8080) in a browser. Use the style 
 │   └── download-tile.sh
 ├── web/
 │   └── index.html            # MapLibre GL map viewer
+├── fonts/
+│   ├── generate-glyphs.sh    # Font to PBF glyph converter
+│   ├── input/                # Source .ttf/.otf files (gitignored)
+│   └── output/               # Generated PBF glyphs, served by Caddy
 └── data/                     # Tile storage (gitignored)
 ```
 

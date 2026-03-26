@@ -37,6 +37,7 @@
                 <option value="grayscale">Grayscale</option>
                 <option value="black">Black</option>
                 <option value="blueberry" selected>Blueberry</option>
+                <option value="blueberry-light">Blueberry Milk</option>
             </select>
         </label>
         <label style="margin-left: 12px;">
@@ -144,33 +145,137 @@
             }
         };
 
+        const blueberryLightFlavor = {
+            background: "#E4EDF5",
+            earth: "#E4EDF5",
+            park_a: "#D4E2EE",
+            park_b: "#D4E2EE",
+            hospital: "#DAE6F0",
+            industrial: "#DAE6F0",
+            school: "#DAE6F0",
+            wood_a: "#CEDDE9",
+            wood_b: "#CEDDE9",
+            pedestrian: "#DCE8F2",
+            scrub_a: "#D6E4EF",
+            scrub_b: "#D6E4EF",
+            glacier: "#E8F0F8",
+            sand: "#E0EAF3",
+            beach: "#E0EAF3",
+            aerodrome: "#DAE6F0",
+            runway: "#B8CCE0",
+            water: "#8AABC5",
+            zoo: "#D4E2EE",
+            military: "#DAE6F0",
+            tunnel_other_casing: "#C8D8E8",
+            tunnel_minor_casing: "#C8D8E8",
+            tunnel_link_casing: "#C8D8E8",
+            tunnel_major_casing: "#C8D8E8",
+            tunnel_highway_casing: "#C8D8E8",
+            tunnel_other: "#CAD9E8",
+            tunnel_minor: "#CAD9E8",
+            tunnel_link: "#CAD9E8",
+            tunnel_major: "#CAD9E8",
+            tunnel_highway: "#CAD9E8",
+            pier: "#B8CCE0",
+            buildings: "#C8D8E8",
+            minor_service_casing: "#C8D8E8",
+            minor_casing: "#C8D8E8",
+            link_casing: "#C8D8E8",
+            major_casing_late: "#C8D8E8",
+            highway_casing_late: "#C8D8E8",
+            other: "#B8CCE0",
+            minor_service: "#CAD9E8",
+            minor_a: "#B8CCE0",
+            minor_b: "#CAD9E8",
+            link: "#B8CCE0",
+            major_casing_early: "#C8D8E8",
+            major: "#B8CCE0",
+            highway_casing_early: "#C8D8E8",
+            highway: "#A8BED6",
+            railway: "#B0C4D8",
+            boundaries: "#7599BF",
+            bridges_other_casing: "#C8D8E8",
+            bridges_minor_casing: "#C8D8E8",
+            bridges_link_casing: "#C8D8E8",
+            bridges_major_casing: "#C8D8E8",
+            bridges_highway_casing: "#C8D8E8",
+            bridges_other: "#B8CCE0",
+            bridges_minor: "#B8CCE0",
+            bridges_link: "#B8CCE0",
+            bridges_major: "#B8CCE0",
+            bridges_highway: "#A8BED6",
+            roads_label_minor: "#6A8AA4",
+            roads_label_minor_halo: "#E4EDF5",
+            roads_label_major: "#4A6A82",
+            roads_label_major_halo: "#E4EDF5",
+            ocean_label: "#2A4A64",
+            subplace_label: "#7A96AE",
+            subplace_label_halo: "#E4EDF5",
+            city_label: "#2A4A64",
+            city_label_halo: "#E4EDF5",
+            state_label: "#7A96AE",
+            state_label_halo: "#E4EDF5",
+            country_label: "#172F48",
+            address_label: "#6A8AA4",
+            address_label_halo: "#E4EDF5",
+            pois: {
+                blue: "#7A96AE",
+                green: "#7A96AE",
+                lapis: "#7A96AE",
+                pink: "#7A96AE",
+                red: "#7A96AE",
+                slategray: "#7A96AE",
+                tangerine: "#7A96AE",
+                turquoise: "#7A96AE"
+            },
+            landcover: {
+                grassland: "rgba(216, 228, 240, 0)",
+                barren: "rgba(220, 232, 242, 0)",
+                urban_area: "rgba(218, 230, 241, 0)",
+                farmland: "rgba(216, 228, 240, 0)",
+                glacier: "rgba(224, 234, 244, 0)",
+                scrub: "rgba(218, 230, 241, 0)",
+                forest: "rgba(212, 225, 237, 0)"
+            }
+        };
+
         const TILES_URL = window.location.origin + "/tiles/planet/{z}/{x}/{y}.mvt";
         const GLYPHS_DEFAULT = "https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf";
         const GLYPHS_LOCAL = window.location.origin + "/fonts/{fontstack}/{range}.pbf";
         const ATTRIBUTION = '&copy; OpenStreetMap contributors';
 
         function buildStyle(theme, showPois, show3d) {
-            const flavor = theme === "blueberry" ? blueberryFlavor : basemaps.namedFlavor(theme);
+            var isBlueberry = theme === "blueberry" || theme === "blueberry-light";
+            var flavors = { "blueberry": blueberryFlavor, "blueberry-light": blueberryLightFlavor };
+            var flavor = flavors[theme] || basemaps.namedFlavor(theme);
             var layerOpts = { lang: "en" };
-            if (theme === "blueberry") {
+            if (isBlueberry) {
                 layerOpts.bold = "Inter-Bold";
                 layerOpts.regular = "Inter-Regular";
                 layerOpts.italic = "Inter-Italic";
             }
             var layers = basemaps.layers("protomaps", flavor, layerOpts);
-            if (theme === "blueberry") {
+            if (isBlueberry) {
                 layers.forEach(function (l) {
                     if (l.layout && l.layout["text-transform"] === "uppercase") {
                         delete l.layout["text-transform"];
                     }
-                    // Major cities brighter, minor cities dimmer
                     if (l.id === "places_locality" && l.paint) {
-                        l.paint["text-color"] = [
-                            "case",
-                            ["<=", ["get", "min_zoom"], 5], "#8AABC5",
-                            ["<=", ["get", "min_zoom"], 8], "#6A8AA4",
-                            "#4A6A82"
-                        ];
+                        if (theme === "blueberry") {
+                            l.paint["text-color"] = [
+                                "case",
+                                ["<=", ["get", "min_zoom"], 5], "#8AABC5",
+                                ["<=", ["get", "min_zoom"], 8], "#6A8AA4",
+                                "#4A6A82"
+                            ];
+                        } else {
+                            l.paint["text-color"] = [
+                                "case",
+                                ["<=", ["get", "min_zoom"], 5], "#172F48",
+                                ["<=", ["get", "min_zoom"], 8], "#2A4A64",
+                                "#5A7A96"
+                            ];
+                        }
                     }
                 });
             }
@@ -199,8 +304,8 @@
             }
             return {
                 version: 8,
-                glyphs: theme === "blueberry" ? GLYPHS_LOCAL : GLYPHS_DEFAULT,
-                sprite: "https://protomaps.github.io/basemaps-assets/sprites/v4/" + (theme === "blueberry" ? "dark" : theme),
+                glyphs: isBlueberry ? GLYPHS_LOCAL : GLYPHS_DEFAULT,
+                sprite: "https://protomaps.github.io/basemaps-assets/sprites/v4/" + (isBlueberry ? (theme === "blueberry" ? "dark" : "light") : theme),
                 sources: {
                     protomaps: {
                         type: "vector",
