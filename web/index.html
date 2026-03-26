@@ -46,6 +46,9 @@
         <label style="margin-left: 12px;">
             <input type="checkbox" id="buildings3d"> 3D Buildings
         </label>
+        <label style="margin-left: 12px;">
+            <input type="checkbox" id="shields"> Shields
+        </label>
     </div>
 
     <script src="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.js"></script>
@@ -56,7 +59,7 @@
         const GLYPHS_DEFAULT = "https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf";
         const ATTRIBUTION = '&copy; OpenStreetMap contributors';
 
-        function buildStyle(theme, showPois, show3d) {
+        function buildStyle(theme, showPois, show3d, showShields) {
             var bb = blueberryTheme(theme);
             var flavor = bb ? bb.flavor : basemaps.namedFlavor(theme);
             var layerOpts = bb ? bb.layerOpts({ lang: "en" }) : { lang: "en" };
@@ -64,6 +67,9 @@
             if (bb) bb.postProcess(layers);
             if (!showPois) {
                 layers = layers.filter(function (l) { return l.id !== "pois"; });
+            }
+            if (!showShields) {
+                layers = layers.filter(function (l) { return l.id !== "roads_shields" && l.id !== "shield_text"; });
             }
             if (show3d) {
                 var buildingsIdx = layers.findIndex(function (l) { return l.id === "buildings"; });
@@ -117,7 +123,8 @@
             return buildStyle(
                 document.getElementById("theme").value,
                 document.getElementById("pois").checked,
-                document.getElementById("buildings3d").checked
+                document.getElementById("buildings3d").checked,
+                document.getElementById("shields").checked
             );
         }
 
@@ -130,6 +137,10 @@
         });
 
         document.getElementById("buildings3d").addEventListener("change", function () {
+            map.setStyle(currentStyle());
+        });
+
+        document.getElementById("shields").addEventListener("change", function () {
             map.setStyle(currentStyle());
         });
     </script>
