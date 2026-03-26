@@ -35,6 +35,9 @@ The example app includes two custom map themes:
 - **Blueberry** — a dark navy theme with a subdued label hierarchy
 - **Blueberry Milk** — a matching light theme with dark labels on a pale blue background
 
+![Blueberry dark theme](docs/blueberry.png)
+![Blueberry Milk light theme](docs/blueberry-light.png)
+
 Both use the [Inter](https://rsms.me/inter/) font, served locally as PBF glyphs.
 
 ### Custom font glyphs
