@@ -91,7 +91,7 @@ var blueberryFlavor = {
     city_label_halo: "#203751",
     state_label: "#4A6A82",
     state_label_halo: "#0a1a2a",
-    country_label: "#F7F7F7",
+    country_label: "#8AABC5",
     address_label: "#5A7A96",
     address_label_halo: "#0a1a2a",
     pois: {
@@ -277,6 +277,9 @@ function blueberryTheme(name) {
                         }
                         l.layout["text-font"] = ["literal", [target]];
                     }
+                }
+                if (l.id === "places_country" && l.layout) {
+                    l.layout["text-font"] = ["literal", [fonts.regular]];
                 }
                 if (l.id === "places_locality" && l.paint) {
                     l.paint["text-color"] = [
