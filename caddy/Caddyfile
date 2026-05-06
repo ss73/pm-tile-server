@@ -4,9 +4,24 @@
 
 :80 {
 	handle_path /tiles/* {
-		pmtiles_proxy {
-			bucket file:///data
-			cache_size 256
+		@no_key not query key=*
+		@revoked query key=REVOKED-EXAMPLE-001
+		@valid query key=DEMO-EXAMPLE-001 key=CONSUMER-EXAMPLE-001
+
+		handle @no_key {
+			respond 401
+		}
+		handle @revoked {
+			respond 403
+		}
+		handle @valid {
+			pmtiles_proxy {
+				bucket file:///data
+				cache_size 256
+			}
+		}
+		handle {
+			respond 403
 		}
 	}
 

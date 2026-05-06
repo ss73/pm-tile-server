@@ -49,17 +49,30 @@
         <label style="margin-left: 12px;">
             <input type="checkbox" id="shields"> Shields
         </label>
+        <label style="margin-left: 12px;">API Key
+            <select id="apikey">
+                <option value="DEMO-EXAMPLE-001" selected>Demo (valid)</option>
+                <option value="CONSUMER-EXAMPLE-001">Consumer (valid)</option>
+                <option value="REVOKED-EXAMPLE-001">Revoked (403)</option>
+                <option value="WRONG-KEY">Unknown (403)</option>
+                <option value="">(no key — 401)</option>
+            </select>
+        </label>
     </div>
 
     <script src="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.js"></script>
     <script src="https://unpkg.com/@protomaps/basemaps@5/dist/basemaps.js"></script>
     <script src="blueberry.js"></script>
     <script>
-        const TILES_URL = window.location.origin + "/tiles/planet/{z}/{x}/{y}.mvt";
+        const TILES_URL_BASE = window.location.origin + "/tiles/planet/{z}/{x}/{y}.mvt";
         const GLYPHS_DEFAULT = "https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf";
         const ATTRIBUTION = '&copy; OpenStreetMap contributors';
 
-        function buildStyle(theme, showPois, show3d, showShields) {
+        function tilesUrl(apiKey) {
+            return apiKey ? TILES_URL_BASE + "?key=" + encodeURIComponent(apiKey) : TILES_URL_BASE;
+        }
+
+        function buildStyle(theme, showPois, show3d, showShields, apiKey) {
             var bb = blueberryTheme(theme);
             var flavor = bb ? bb.flavor : basemaps.namedFlavor(theme);
             var layerOpts = bb ? bb.layerOpts({ lang: "en" }) : { lang: "en" };
@@ -98,7 +111,7 @@
                 sources: {
                     protomaps: {
                         type: "vector",
-                        tiles: [TILES_URL],
+                        tiles: [tilesUrl(apiKey)],
                         maxzoom: 15,
                         attribution: ATTRIBUTION
                     }
@@ -109,7 +122,13 @@
 
         const map = new maplibregl.Map({
             container: "map",
-            style: buildStyle(document.getElementById("theme").value),
+            style: buildStyle(
+                document.getElementById("theme").value,
+                false,
+                false,
+                false,
+                document.getElementById("apikey").value
+            ),
             center: [0, 20],
             zoom: 2,
             maxPitch: 85,
@@ -124,7 +143,8 @@
                 document.getElementById("theme").value,
                 document.getElementById("pois").checked,
                 document.getElementById("buildings3d").checked,
-                document.getElementById("shields").checked
+                document.getElementById("shields").checked,
+                document.getElementById("apikey").value
             );
         }
 
@@ -141,6 +161,10 @@
         });
 
         document.getElementById("shields").addEventListener("change", function () {
+            map.setStyle(currentStyle());
+        });
+
+        document.getElementById("apikey").addEventListener("change", function () {
             map.setStyle(currentStyle());
         });
     </script>
